@@ -1,0 +1,47 @@
+[
+  {
+    "question": "What was the total revenue for Q3 2024?",
+    "answer": "The total revenue for Q3 2024 was $4.2 billion, a 12% increase year-over-year.",
+    "contexts": [
+      "Q3 2024 financial results: Total revenue reached $4.2 billion, representing a 12% increase compared to Q3 2023 revenue of $3.75 billion.",
+      "Revenue breakdown by segment: Product revenue $2.8B, Service revenue $1.4B."
+    ],
+    "ground_truth": "Total revenue for Q3 2024 was $4.2 billion, up 12% year-over-year."
+  },
+  {
+    "question": "Which flight routes had the highest on-time performance last month?",
+    "answer": "Routes from Chicago to Denver and New York to Boston had the highest on-time performance at 94% and 92% respectively.",
+    "contexts": [
+      "Monthly on-time performance report: ORD-DEN route achieved 94% on-time arrivals. BOS-JFK route achieved 92% on-time arrivals.",
+      "Average system-wide on-time performance was 81% for the same period."
+    ],
+    "ground_truth": "ORD-DEN and BOS-JFK routes had the highest on-time performance at 94% and 92%."
+  },
+  {
+    "question": "What is the refund policy for cancelled flights?",
+    "answer": "Passengers receive a full refund within 7 business days for flights cancelled by the airline, or travel credit valid for 12 months.",
+    "contexts": [
+      "Airline refund policy section 4.2: For airline-initiated cancellations, passengers are entitled to a full cash refund within 7 business days or a travel credit valid for 12 months from the date of cancellation.",
+      "Passengers must submit refund requests within 90 days of the original travel date."
+    ],
+    "ground_truth": "Full refund within 7 business days or 12-month travel credit for airline-cancelled flights."
+  },
+  {
+    "question": "How many passengers were served in the last quarter?",
+    "answer": "The airline served 18.3 million passengers in the last quarter, a 7% increase from the previous quarter.",
+    "contexts": [
+      "Passenger traffic report Q4: Total passengers carried: 18.3 million. This represents a 7% quarter-over-quarter increase.",
+      "Load factor averaged 84% across all routes during this period."
+    ],
+    "ground_truth": "18.3 million passengers were served last quarter, up 7% quarter-over-quarter."
+  },
+  {
+    "question": "What are the baggage fee charges for extra luggage?",
+    "answer": "The first checked bag is free for elite members. Additional bags cost $35 for the second bag and $75 for each subsequent bag.",
+    "contexts": [
+      "Baggage policy: Elite members receive one free checked bag. Standard fare passengers pay $30 for the first checked bag.",
+      "Additional baggage fees: Second bag $35, third bag and beyond $75 per bag. Overweight bags (over 50 lbs) incur an additional $100 fee."
+    ],
+    "ground_truth": "Second checked bag costs $35, third and beyond cost $75 each. Elite members get one free bag."
+  }
+]

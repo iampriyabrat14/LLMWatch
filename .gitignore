@@ -1,0 +1,36 @@
+# Environment — NEVER commit real keys
+.env
+
+# Databases
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# FAISS index (can be rebuilt)
+*.faiss
+*.pkl

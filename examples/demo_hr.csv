@@ -1,0 +1,16 @@
+emp_id,name,department,role,experience_yrs,salary,joining_date,location,performance_rating,training_hours,promotions,attrition_risk
+E001,Priya Sharma,Engineering,Senior Engineer,5,1200000,2019-03-15,Bengaluru,4.8,48,2,Low
+E002,Rahul Gupta,Sales,Sales Manager,8,950000,2016-07-01,Mumbai,4.2,32,3,Low
+E003,Anjali Singh,HR,HR Business Partner,4,720000,2020-01-10,Delhi,4.5,40,1,Low
+E004,Vikram Nair,Engineering,Principal Engineer,10,1800000,2014-11-20,Bengaluru,4.9,52,4,Low
+E005,Sneha Reddy,Marketing,Marketing Lead,6,880000,2018-06-05,Hyderabad,4.0,28,2,Medium
+E006,Amit Patel,Sales,Sales Executive,3,580000,2021-03-22,Mumbai,3.5,20,0,High
+E007,Kavya Menon,Engineering,Staff Engineer,7,1500000,2017-08-14,Bengaluru,4.6,56,3,Low
+E008,Rohan Das,HR,Recruiter,2,480000,2022-02-01,Delhi,3.9,24,0,High
+E009,Pooja Iyer,Marketing,Content Strategist,4,640000,2020-09-30,Chennai,4.3,36,1,Low
+E010,Arjun Mehta,Engineering,Engineering Manager,12,2200000,2012-05-12,Bengaluru,4.9,60,5,Low
+E011,Divya Krishnan,Data Science,Data Scientist,3,950000,2021-04-18,Bengaluru,4.4,44,1,Medium
+E012,Karan Verma,Finance,Financial Analyst,5,780000,2019-08-25,Mumbai,4.1,30,1,Low
+E013,Meera Pillai,Engineering,Backend Engineer,4,1050000,2020-11-03,Bengaluru,4.7,50,1,Low
+E014,Suresh Babu,Sales,Regional Head,9,1100000,2015-02-14,Chennai,4.0,26,3,Medium
+E015,Nisha Agarwal,Data Science,ML Engineer,5,1200000,2019-07-22,Bengaluru,4.8,58,2,Low

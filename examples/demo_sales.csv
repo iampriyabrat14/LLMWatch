@@ -1,0 +1,26 @@
+order_id,product,category,sales_rep,region,month,units_sold,unit_price,revenue,discount_pct,profit
+ORD001,Laptop Pro 15,Electronics,Ravi Kumar,North,Jan-2024,45,85000,3825000,5,1148000
+ORD002,Wireless Headphones,Electronics,Sneha Reddy,South,Jan-2024,120,4500,540000,10,162000
+ORD003,Office Chair Ergonomic,Furniture,Amit Patel,West,Jan-2024,30,12000,360000,8,108000
+ORD004,Standing Desk,Furniture,Pooja Iyer,East,Jan-2024,18,25000,450000,5,135000
+ORD005,Smartphone X12,Electronics,Ravi Kumar,North,Jan-2024,200,55000,11000000,3,3300000
+ORD006,Laptop Pro 15,Electronics,Kavya Menon,South,Feb-2024,60,85000,5100000,5,1530000
+ORD007,Bluetooth Speaker,Electronics,Arjun Mehta,West,Feb-2024,85,3200,272000,12,81600
+ORD008,Office Chair Ergonomic,Furniture,Sneha Reddy,North,Feb-2024,42,12000,504000,8,151200
+ORD009,Smartphone X12,Electronics,Pooja Iyer,East,Feb-2024,175,55000,9625000,3,2887500
+ORD010,Mechanical Keyboard,Electronics,Amit Patel,South,Feb-2024,95,6500,617500,7,185250
+ORD011,Standing Desk,Furniture,Ravi Kumar,West,Mar-2024,25,25000,625000,5,187500
+ORD012,Laptop Pro 15,Electronics,Arjun Mehta,East,Mar-2024,72,85000,6120000,5,1836000
+ORD013,Wireless Headphones,Electronics,Kavya Menon,North,Mar-2024,140,4500,630000,10,189000
+ORD014,Smartphone X12,Electronics,Sneha Reddy,South,Mar-2024,210,55000,11550000,3,3465000
+ORD015,Office Chair Ergonomic,Furniture,Pooja Iyer,West,Mar-2024,55,12000,660000,8,198000
+ORD016,Laptop Pro 15,Electronics,Ravi Kumar,North,Apr-2024,80,85000,6800000,5,2040000
+ORD017,Bluetooth Speaker,Electronics,Amit Patel,East,Apr-2024,110,3200,352000,12,105600
+ORD018,Smartphone X12,Electronics,Arjun Mehta,North,Apr-2024,230,55000,12650000,3,3795000
+ORD019,Mechanical Keyboard,Electronics,Kavya Menon,West,Apr-2024,115,6500,747500,7,224250
+ORD020,Standing Desk,Furniture,Sneha Reddy,South,Apr-2024,32,25000,800000,5,240000
+ORD021,Laptop Pro 15,Electronics,Pooja Iyer,East,May-2024,95,85000,8075000,5,2422500
+ORD022,Wireless Headphones,Electronics,Ravi Kumar,South,May-2024,160,4500,720000,10,216000
+ORD023,Smartphone X12,Electronics,Amit Patel,West,May-2024,245,55000,13475000,3,4042500
+ORD024,Office Chair Ergonomic,Furniture,Arjun Mehta,North,May-2024,68,12000,816000,8,244800
+ORD025,Mechanical Keyboard,Electronics,Kavya Menon,East,May-2024,130,6500,845000,7,253500
