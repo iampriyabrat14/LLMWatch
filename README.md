@@ -4,6 +4,35 @@
 
 A plug-and-play monitoring layer for any LangChain or LangGraph agent. Tracks **cost per query**, **latency percentiles**, **token usage**, and **hallucination rate** (via RAGAS). Includes a live Streamlit dashboard and a GitHub Actions workflow that auto-runs evaluation on every PR — so you catch quality regressions before they hit production.
 
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+![LangGraph](https://img.shields.io/badge/LangGraph-1C3C3C?style=flat&logoColor=white)
+![RAGAS](https://img.shields.io/badge/RAGAS-4B0082?style=flat&logoColor=white)
+![LangSmith](https://img.shields.io/badge/LangSmith-FF6B35?style=flat&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat&logo=githubactions&logoColor=white)
+
+---
+
+## Dashboard Preview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  LLMWatch — Production Agent Monitor                        │
+├──────────────┬──────────────┬──────────────┬───────────────┤
+│  Cost/Query  │  P50 Latency │  P95 Latency │  RAGAS Score  │
+│  $0.0023     │  820 ms      │  1,840 ms    │  0.87 / 1.0   │
+├──────────────┴──────────────┴──────────────┴───────────────┤
+│  Token Usage (last 24h)                                     │
+│  Input:  1,240 avg/query    ████████████░░░░░░░░░░         │
+│  Output:   380 avg/query    ████░░░░░░░░░░░░░░░░░░         │
+├─────────────────────────────────────────────────────────────┤
+│  Hallucination Score Trend  [CI gate: fail if < 0.75]       │
+│  0.91 ▁▂▃▄▅▅▆▇█ 0.87  ← today                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> Add a screenshot of your Streamlit dashboard here: `assets/dashboard.png`
+
 ---
 
 ## Architecture
