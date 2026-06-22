@@ -1,272 +1,166 @@
-﻿# LLMWatch
+# LLMWatch
 
-> LLM Observability & Evaluation Platform for Production Agents
-
-A plug-and-play monitoring layer for any LangChain or LangGraph agent. Tracks **cost per query**, **latency percentiles**, **token usage**, and **hallucination rate** (via RAGAS). Includes a live Streamlit dashboard and a GitHub Actions workflow that auto-runs evaluation on every PR — so you catch quality regressions before they hit production.
+> **LLM Observability & Evaluation Platform for Production Agents** — plug-and-play monitoring layer for any LangChain or LangGraph agent. Tracks cost, latency percentiles, token usage, and hallucination rate. Fails your CI if quality drops.
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph-1C3C3C?style=flat&logoColor=white)
-![RAGAS](https://img.shields.io/badge/RAGAS-4B0082?style=flat&logoColor=white)
-![LangSmith](https://img.shields.io/badge/LangSmith-FF6B35?style=flat&logoColor=white)
+![RAGAS](https://img.shields.io/badge/RAGAS-Evaluation-4B0082?style=flat&logoColor=white)
+![LangSmith](https://img.shields.io/badge/LangSmith-Tracing-FF6B35?style=flat&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat&logo=githubactions&logoColor=white)
 
 ---
 
-## Dashboard Preview
+## The Problem It Solves
+
+Most teams build agents and assume they work. No cost visibility. No latency tracking. No quality gates. Then production breaks and no one knows why — too expensive? Too slow? Hallucinating?
+
+LLMWatch wraps your existing agent with **2 lines of code** and gives you full observability: cost per query, P50/P95/P99 latency, token usage trends, and RAGAS-based hallucination scoring — all visible in a live dashboard and enforced in CI.
+
+---
+
+## Add to Any Agent in 2 Lines
+
+```python
+from llmwatch import LLMWatchCallback
+
+callback = LLMWatchCallback(
+    project="my-rag-agent",
+    budget_limit_usd=5.00,      # alert when spend exceeds $5
+    latency_alert_ms=3000,      # alert when a call takes >3s
+)
+
+# Works with any LangChain/LangGraph chain
+chain.invoke(
+    {"input": "What is the refund policy?"},
+    config={"callbacks": [callback]}
+)
+```
+
+No code changes to your agent logic. Drop in, monitor immediately.
+
+---
+
+## Live Dashboard
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  LLMWatch — Production Agent Monitor                        │
-├──────────────┬──────────────┬──────────────┬───────────────┤
-│  Cost/Query  │  P50 Latency │  P95 Latency │  RAGAS Score  │
-│  $0.0023     │  820 ms      │  1,840 ms    │  0.87 / 1.0   │
-├──────────────┴──────────────┴──────────────┴───────────────┤
-│  Token Usage (last 24h)                                     │
-│  Input:  1,240 avg/query    ████████████░░░░░░░░░░         │
-│  Output:   380 avg/query    ████░░░░░░░░░░░░░░░░░░         │
-├─────────────────────────────────────────────────────────────┤
-│  Hallucination Score Trend  [CI gate: fail if < 0.75]       │
-│  0.91 ▁▂▃▄▅▅▆▇█ 0.87  ← today                             │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│  LLMWatch — Production Agent Monitor           [last 24h ▼]       │
+├─────────────────┬─────────────────┬─────────────────┬────────────┤
+│  Total Queries  │   Cost / Query  │   P95 Latency   │ RAGAS Score│
+│     1,247       │    $0.0023      │    1,840 ms      │  0.87/1.0  │
+│   +12% today    │  -8% vs yest.   │  SLO: 2,000ms ✅ │ gate: 0.80 │
+├─────────────────┴─────────────────┴─────────────────┴────────────┤
+│  Token Usage — Last 24 Hours                                      │
+│                                                                   │
+│  Input tokens avg:  1,240 / query                                 │
+│  ████████████████░░░░░░░░░░░░ (62%)                               │
+│                                                                   │
+│  Output tokens avg:   380 / query                                 │
+│  █████░░░░░░░░░░░░░░░░░░░░░░░ (19%)                               │
+├───────────────────────────────────────────────────────────────────┤
+│  Latency Percentiles by Model                                     │
+│                                                                   │
+│  Model             Queries   P50      P95      P99                │
+│  ─────────────── ─────────  ──────  ───────  ───────              │
+│  gpt-4o              120    1,240ms  1,840ms  3,120ms             │
+│  gpt-4o-mini         340      480ms    820ms  1,240ms             │
+│  llama3-70b (Groq)    80      390ms    610ms    940ms             │
+├───────────────────────────────────────────────────────────────────┤
+│  RAGAS Hallucination Trend                [CI gate: fail if <0.80]│
+│                                                                   │
+│  Faithfulness     ▁▂▄▅▆▇█  0.91  ✅                              │
+│  Answer Relevancy ▁▂▃▄▅▅▆  0.88  ✅                              │
+│  Context Precision▁▂▃▃▄▅▅  0.84  ✅                              │
+│  Overall                    0.88  ✅  PASS                        │
+└───────────────────────────────────────────────────────────────────┘
 ```
-
-> Add a screenshot of your Streamlit dashboard here: `assets/dashboard.png`
 
 ---
 
 ## Architecture
 
 ```
-LangGraph / LangChain Agent
-         │
-         ▼
-   LLMWatch Wrapper
-   (callback handler)
-         │
-    ┌────┴────┐
-    ▼         ▼
-LangSmith   SQLite / Postgres
-(tracing)   (metrics store)
-         │
-         ▼
-   Streamlit Dashboard
-   ┌──────────────────────────────────┐
-   │ Cost/query       $0.0023        │
-   │ P50 Latency      820 ms         │
-   │ P95 Latency      1,840 ms       │
-   │ Input Tokens     1,240 / query  │
-   │ Output Tokens    380 / query    │
-   │ RAGAS Score      0.87           │
-   └──────────────────────────────────┘
-         │
-         ▼
-GitHub Actions (on PR)
-   → Run RAGAS eval suite
-   → Post score as PR comment
-   → Fail PR if score < threshold
+┌────────────────────────────────────────────────────────────────────┐
+│                    YOUR EXISTING AGENT                             │
+│                                                                    │
+│   chain.invoke(input, config={"callbacks": [LLMWatchCallback]})   │
+│                          │                                         │
+│                          ▼                                         │
+│   ┌──────────────────────────────────────────────────────────┐    │
+│   │               LLMWatchCallback (core)                    │    │
+│   │                                                          │    │
+│   │  on_llm_start():                                         │    │
+│   │    → start timer (perf_counter)                          │    │
+│   │    → count input tokens                                  │    │
+│   │                                                          │    │
+│   │  on_llm_end():                                           │    │
+│   │    → stop timer → compute latency                        │    │
+│   │    → count output tokens                                 │    │
+│   │    → calculate cost from pricing table                   │    │
+│   │    → check vs budget_limit + latency_alert               │    │
+│   │    → write to SQLite                                     │    │
+│   │    → forward trace to LangSmith                          │    │
+│   └──────────────────────────────────────────────────────────┘    │
+└────────────────────────────────────────────────────────────────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              ▼                ▼                ▼
+   ┌─────────────────┐ ┌──────────────┐ ┌────────────────────┐
+   │    LangSmith    │ │   SQLite /   │ │   RAGAS Evaluator  │
+   │                 │ │  PostgreSQL  │ │                    │
+   │  Full trace:    │ │              │ │  Runs on eval       │
+   │  • agent hops   │ │  Stores:     │ │  dataset via CI     │
+   │  • tool calls   │ │  • latency   │ │                    │
+   │  • token counts │ │  • cost      │ │  Metrics:           │
+   │  • latency      │ │  • tokens    │ │  • Faithfulness     │
+   │  • errors       │ │  • errors    │ │  • Answer Relevancy │
+   └─────────────────┘ └──────┬───────┘ │  • Context Prec.   │
+                              │         └────────────────────┘
+                              ▼
+                   ┌──────────────────┐
+                   │ Streamlit        │
+                   │ Dashboard        │
+                   │                  │
+                   │ KPI cards:       │
+                   │ cost, latency,   │
+                   │ tokens, RAGAS    │
+                   │                  │
+                   │ Time-series:     │
+                   │ trends over time │
+                   └──────────────────┘
+
+                   ┌──────────────────────────────────────────┐
+                   │  GitHub Actions — Runs on every PR       │
+                   │                                          │
+                   │  1. python eval/run_eval.py              │
+                   │  2. Post RAGAS scores as PR comment      │
+                   │  3. Fail CI if score < threshold (0.80)  │
+                   └──────────────────────────────────────────┘
 ```
 
 ---
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Agent Framework | LangGraph, LangChain |
-| LLM Tracing | LangSmith |
-| Evaluation | RAGAS |
-| Metrics Store | SQLite (dev) / PostgreSQL (prod) |
-| Dashboard | Streamlit |
-| CI/CD Eval | GitHub Actions |
-| LLM | OpenAI GPT-4o, GPT-4o-mini, Groq, Gemini |
-
----
-
-## Features
-
-- Drop-in callback handler — wrap any existing agent in 2 lines
-- **Latency tracking**: P50 / P95 / P99 percentiles, per-model breakdown, configurable alert threshold
-- **Cost tracking**: per-call USD cost, cumulative spend, configurable budget limit alert
-- **Token tracking**: input vs output token split per call and aggregated over time
-- Multi-model pricing table (OpenAI, Anthropic Claude, Groq, Gemini)
-- RAGAS evaluation: faithfulness, answer relevancy, context precision
-- Streamlit dashboard with live metrics and time-series charts
-- GitHub Actions eval workflow — auto-comments RAGAS scores on every PR
-- PR quality gate — fails CI if RAGAS score drops below threshold
-- LangSmith integration for full trace visualization
-
----
-
-## Project Structure
+## Cost Calculation
 
 ```
-LLMWatch/
-├── llmwatch/
-│   ├── __init__.py
-│   ├── callback.py             # LangChain callback handler (core)
-│   ├── metrics.py              # Cost + token tracking, per-model pricing table
-│   ├── evaluator.py            # RAGAS eval runner + PR comment formatter
-│   └── db.py                   # SQLite metrics persistence (P50/P95/P99, cost, tokens)
-├── dashboard/
-│   └── app.py                  # Streamlit dashboard (6 KPI cards + 4 charts)
-├── eval/
-│   ├── dataset.json            # Q&A eval dataset (5 domain examples)
-│   └── run_eval.py             # CLI eval script (used by CI)
-├── .github/
-│   └── workflows/
-│       └── eval.yml            # PR eval + comment + quality gate workflow
-├── examples/
-│   └── demo_agent.py           # Sample LangGraph agent with LLMWatch
-├── tests/
-│   └── test_callback.py        # Unit tests: cost calc, token extraction, DB, alerts
-├── requirements.txt
-├── .env.example
-└── README.md
+Per LLM call:
+  cost = (input_tokens  / 1000) × price_per_1k_input
+       + (output_tokens / 1000) × price_per_1k_output
+
+Pricing table (USD per 1K tokens):
+  ┌────────────────────────┬──────────┬───────────┐
+  │ Model                  │ Input    │ Output    │
+  ├────────────────────────┼──────────┼───────────┤
+  │ gpt-4o                 │ $0.0050  │ $0.0150   │
+  │ gpt-4o-mini            │ $0.00015 │ $0.00060  │
+  │ claude-sonnet-4-6      │ $0.0030  │ $0.0150   │
+  │ claude-haiku-4-5       │ $0.00025 │ $0.00125  │
+  │ llama3-70b (Groq)      │ $0.00059 │ $0.00079  │
+  │ gemini-1.5-flash       │ $0.00008 │ $0.00030  │
+  └────────────────────────┴──────────┴───────────┘
+  Unknown models → fallback rate $0.002 / $0.006
 ```
-
----
-
-## Quick Start
-
-### Install
-
-```bash
-pip install -r requirements.txt
-cp .env.example .env   # add your API keys
-```
-
-### Wrap your agent (2 lines)
-
-```python
-from llmwatch import LLMWatchCallback
-
-callback = LLMWatchCallback(
-    project="my-agent",
-    budget_limit_usd=5.00,     # alert when cumulative spend exceeds $5
-    latency_alert_ms=3000,     # alert when a single call takes > 3s
-)
-
-chain.invoke(
-    {"input": "What is the revenue for Q3?"},
-    config={"callbacks": [callback]}
-)
-```
-
-### Print summary after a run
-
-```python
-summary = callback.summary()
-print(f"Avg latency : {summary['avg_latency_ms']:.0f} ms")
-print(f"P95 latency : {summary['p95_ms']:.0f} ms")
-print(f"Total cost  : ${summary['total_cost_usd']:.5f}")
-print(f"Input tokens: {summary['total_input_tokens']:,}")
-```
-
-### Launch dashboard
-
-```bash
-streamlit run dashboard/app.py
-```
-
-Dashboard live at: `http://localhost:8501`
-
----
-
-## Latency Tracking
-
-LLMWatch records wall-clock latency (ms) for every LLM call using `time.perf_counter()`. Latencies are stored in SQLite and aggregated on-the-fly.
-
-| Metric | Description |
-|--------|-------------|
-| P50 (median) | Half of calls complete faster than this |
-| P95 | 95% of calls complete faster than this — the SLO target |
-| P99 | Worst-case tail latency |
-| Avg Latency | Mean response time |
-
-**Alert example** (printed to stdout):
-```
-[LLMWatch] LATENCY ALERT: 4821.3ms exceeds threshold 3000ms
-```
-
-**Per-model breakdown in dashboard:**
-
-| Model | Queries | Avg Latency |
-|-------|---------|-------------|
-| gpt-4o | 120 | 1,840 ms |
-| gpt-4o-mini | 340 | 620 ms |
-| llama3-70b | 80 | 510 ms |
-
----
-
-## Cost & Token Tracking
-
-### How cost is calculated
-
-```
-cost = (input_tokens / 1000) × price_per_1k_input
-     + (output_tokens / 1000) × price_per_1k_output
-```
-
-### Supported model pricing (per 1K tokens, USD)
-
-| Model | Input | Output |
-|-------|-------|--------|
-| gpt-4o | $0.0050 | $0.0150 |
-| gpt-4o-mini | $0.000150 | $0.000600 |
-| gpt-4-turbo | $0.0100 | $0.0300 |
-| gpt-3.5-turbo | $0.000500 | $0.001500 |
-| claude-opus-4-7 | $0.0150 | $0.0750 |
-| claude-sonnet-4-6 | $0.0030 | $0.0150 |
-| claude-haiku-4-5 | $0.000250 | $0.001250 |
-| llama3-70b (Groq) | $0.000590 | $0.000790 |
-| gemini-1.5-pro | $0.001250 | $0.005000 |
-| gemini-1.5-flash | $0.000075 | $0.000300 |
-
-Unknown models fall back to a generic rate of `$0.002 / $0.006`.
-
-### Token split (prompt vs completion)
-
-The dashboard shows a stacked area chart of input vs output tokens over time — so you can see if your prompts are getting bloated or output length is spiking.
-
-**Budget alert example:**
-```
-[LLMWatch] BUDGET ALERT: $1.0023 exceeds limit $1.00
-```
-
-### Cost breakdown via code
-
-```python
-from llmwatch.metrics import cost_breakdown
-
-breakdown = cost_breakdown("gpt-4o", input_tokens=1500, output_tokens=400)
-# {
-#   "model": "gpt-4o",
-#   "input_tokens": 1500,
-#   "output_tokens": 400,
-#   "total_tokens": 1900,
-#   "input_cost_usd": 0.0075,
-#   "output_cost_usd": 0.006,
-#   "total_cost_usd": 0.0135,
-#   "price_per_1k_input": 0.005,
-#   "price_per_1k_output": 0.015
-# }
-```
-
----
-
-## Dashboard Metrics
-
-| Metric | Description |
-|--------|-------------|
-| Total Queries | Count of LLM invocations tracked |
-| Cost / Query | Average USD cost per invocation |
-| Total Cost (USD) | Cumulative spend across all queries |
-| P50 Latency | Median response time in ms |
-| P95 Latency | 95th percentile response time in ms |
-| Error Rate | % of failed invocations |
-| Token Usage Chart | Input vs output token split over time |
-| Cost by Model | Per-model spend and latency table |
 
 ---
 
@@ -285,20 +179,101 @@ jobs:
         if: always()
 ```
 
-Example PR comment auto-posted:
+Auto-posted comment on every PR:
 
 ```
 ## LLMWatch Evaluation Results
 
-| Metric            | Score | Status |
-|-------------------|-------|--------|
-| Faithfulness      | 0.91  | ✅     |
-| Answer Relevancy  | 0.88  | ✅     |
-| Context Precision | 0.84  | ✅     |
-| Overall           | 0.88  | ✅     |
+| Metric             | Score | Status |
+|--------------------|-------|--------|
+| Faithfulness       | 0.91  |   ✅   |
+| Answer Relevancy   | 0.88  |   ✅   |
+| Context Precision  | 0.84  |   ✅   |
+| Overall            | 0.88  |   ✅   |
 
 Threshold: 0.80  |  Result: PASSED ✅
 ```
+
+If Overall < 0.80 → CI fails → PR cannot merge.
+
+---
+
+## Latency Tracking
+
+```
+Wall-clock latency per LLM call via time.perf_counter()
+
+Metrics stored and aggregated in SQLite:
+
+  P50 (median):  half of calls complete faster than this
+  P95:           95% of calls faster — use this as your SLO
+  P99:           worst-case tail latency
+  Avg:           mean response time
+
+Alert printed to stdout:
+  [LLMWatch] LATENCY ALERT: 4821.3ms exceeds threshold 3000ms
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Role |
+|-------|-----------|------|
+| Agent Framework | LangGraph, LangChain | Agents being monitored |
+| LLM Tracing | LangSmith | Full trace visualization |
+| Evaluation | RAGAS | Hallucination + quality scoring |
+| Metrics Store | SQLite (dev) / PostgreSQL (prod) | P50/P95/P99, cost, tokens |
+| Dashboard | Streamlit | Live metrics + time-series charts |
+| CI/CD Eval | GitHub Actions | Auto RAGAS on every PR |
+| LLM Support | OpenAI, Anthropic, Groq, Gemini | Multi-model pricing table |
+
+---
+
+## Project Structure
+
+```
+LLMWatch/
+├── llmwatch/
+│   ├── __init__.py
+│   ├── callback.py         # LangChain callback handler (the core)
+│   ├── metrics.py          # Cost calculation + multi-model pricing table
+│   ├── evaluator.py        # RAGAS eval runner + PR comment formatter
+│   └── db.py               # SQLite metrics persistence
+├── dashboard/
+│   └── app.py              # Streamlit dashboard (KPI cards + 4 charts)
+├── eval/
+│   ├── dataset.json        # Q&A evaluation dataset
+│   └── run_eval.py         # CLI eval runner (used by CI)
+├── .github/
+│   └── workflows/
+│       └── eval.yml        # PR eval + comment + quality gate
+├── examples/
+│   └── demo_agent.py       # Sample LangGraph agent with LLMWatch
+├── tests/
+│   └── test_callback.py    # Unit tests: cost calc, tokens, DB, alerts
+├── requirements.txt
+└── .env.example
+```
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/iampriyabrat14/LLMWatch
+cd LLMWatch
+pip install -r requirements.txt
+cp .env.example .env        # add your API keys
+
+# Run the demo agent with monitoring
+python examples/demo_agent.py
+
+# Launch dashboard
+streamlit run dashboard/app.py
+```
+
+Dashboard: `http://localhost:8501`
 
 ---
 
@@ -317,22 +292,27 @@ EVAL_SCORE_THRESHOLD=0.80
 
 ---
 
-## Running Tests
+## Interview Talking Points
 
-```bash
-pytest tests/ -v
-```
+**Q: Why is observability important for LLM agents?**
+> Agents fail silently. A RAG agent might retrieve wrong chunks and produce a confident-sounding hallucination — and you'd never know without measuring faithfulness scores. LLMWatch catches quality regressions before they reach users, by failing CI if RAGAS scores drop.
+
+**Q: How do you measure hallucination without ground truth?**
+> RAGAS Faithfulness metric doesn't need ground truth answers. It compares the generated answer against the *retrieved context* — if the answer makes claims not supported by the retrieved chunks, it's flagged as hallucination. This works at inference time without labeled data.
+
+**Q: What is the latency alert actually doing?**
+> The callback records `time.perf_counter()` at `on_llm_start` and `on_llm_end`. Wall-clock delta is the actual user-perceived latency. Stored in SQLite, aggregated with `numpy.percentile` for P50/P95/P99. If any single call exceeds `latency_alert_ms`, it prints a console alert — production systems would route this to PagerDuty or Slack.
 
 ---
 
 ## Roadmap
 
-- [ ] Slack/email alert when score drops
-- [ ] Multi-model comparison (GPT-4o vs Groq vs Gemini) side-by-side
+- [ ] Slack/email alerts when score drops
+- [ ] Multi-model side-by-side comparison (GPT-4o vs Groq vs Gemini)
 - [ ] Cost forecasting based on usage trends
 - [ ] Export reports as PDF
-- [ ] Deploy dashboard to AWS ECS (Fargate)
-- [ ] pgvector / PostgreSQL backend for production scale
+- [ ] Deploy dashboard to AWS ECS Fargate
+- [ ] PostgreSQL backend for production scale
 
 ---
 
